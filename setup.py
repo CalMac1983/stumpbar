@@ -14,8 +14,8 @@ setup(
                 "CFBundleName": "Stumpbar",
                 "CFBundleDisplayName": "Stumpbar",
                 "CFBundleIdentifier": "com.calmac.stumpbar",
-                "CFBundleShortVersionString": "1.0.0",
-                "CFBundleVersion": "1.0.0",
+                "CFBundleShortVersionString": "1.1.0",
+                "CFBundleVersion": "1.1.0",
                 "LSUIElement": True,  # menu bar only: no Dock icon
                 "LSMinimumSystemVersion": "11.0",
             },

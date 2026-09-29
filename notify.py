@@ -67,4 +67,5 @@ class Notifier:
         """Log what Notification Center is currently showing from this app (for testing)."""
         if self.center is not None:
             self.center.getDeliveredNotificationsWithCompletionHandler_(
-                lambda ns: log(f"delivered: {[n.request().content().title() for n in ns]}"))
+                lambda ns: log("delivered:\n" + "\n".join(
+                    f"  {n.request().content().title()} | {n.request().content().subtitle()}" for n in ns)))

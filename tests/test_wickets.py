@@ -4,32 +4,39 @@ from pathlib import Path
 import pytest
 
 from scores import Match, Team
-from wickets import (MAX_PENDING_CHECKS, WicketWatcher, describe_method, parse_dismissal,
-                     recent_balls_from_summary, team_wickets)
+from wickets import (MAX_PENDING_CHECKS, WicketWatcher, parse_dismissal,
+                     recent_balls_from_summary, surname, team_wickets)
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
 
-@pytest.mark.parametrize("text, method, runs, balls", [
+@pytest.mark.parametrize("text, line, runs, balls", [
     # Real lines from ESPN's feed (India A v Australia A, Sep 2026).
-    ("T Murphy  b Kamboj 33 (91b 2x4 1x6) SR: 36.26", "bowled Kamboj", "33", "91"),
-    ("JR Philippe c Padikkal b Bhute 5 (21b 0x4 0x6) SR: 23.8", "caught Padikkal, bowled Bhute", "5", "21"),
+    ("T Murphy  b Kamboj 33 (91b 2x4 1x6) SR: 36.26", "Murphy b Kamboj", "33", "91"),
+    ("JR Philippe c Padikkal b Bhute 5 (21b 0x4 0x6) SR: 23.8", "Philippe c Padikkal b Bhute", "5", "21"),
     ("PSP Handscomb c &dagger;Kushagra b Bhute 0 (15b 0x4 0x6) SR: 0",
-     "caught Kushagra (wk), bowled Bhute", "0", "15"),
+     "Handscomb c †Kushagra b Bhute", "0", "15"),
     # Other methods, in the same notation.
-    ("Q de Kock lbw b Starc 12 (9b 2x4 0x6) SR: 133.33", "lbw, bowled Starc", "12", "9"),
-    ("V Kohli c & b Lyon 44 (60b 5x4 0x6) SR: 73.33", "caught & bowled Lyon", "44", "60"),
-    ("RR Pant st &dagger;Carey b Zampa 27 (18b)", "stumped Carey (wk), bowled Zampa", "27", "18"),
-    ("SPD Smith run out (Jadeja/&dagger;Pant) 61 (80b)", "run out (Jadeja, Pant (wk))", "61", "80"),
-    ("M Labuschagne hit wicket b Bumrah 3 (7b)", "hit wicket, bowled Bumrah", "3", "7"),
-    ("RG Sharma retired hurt 20 (22b)", "retired hurt", "20", "22"),
+    ("Q de Kock lbw b Starc 12 (9b 2x4 0x6) SR: 133.33", "de Kock lbw b Starc", "12", "9"),
+    ("V Kohli c & b Lyon 44 (60b 5x4 0x6) SR: 73.33", "Kohli c & b Lyon", "44", "60"),
+    ("RR Pant st &dagger;Carey b Zampa 27 (18b)", "Pant st †Carey b Zampa", "27", "18"),
+    ("SPD Smith run out (Jadeja/&dagger;Pant) 61 (80b)", "Smith run out (Jadeja/†Pant)", "61", "80"),
+    ("M Labuschagne hit wicket b Bumrah 3 (7b)", "Labuschagne hit wicket b Bumrah", "3", "7"),
+    ("RG Sharma retired hurt 20 (22b)", "Sharma retired hurt", "20", "22"),
 ])
-def test_parse_dismissal(text, method, runs, balls):
-    assert parse_dismissal(text) == (method, runs, balls)
+def test_parse_dismissal(text, line, runs, balls):
+    assert parse_dismissal(text) == (line, runs, balls)
 
 
-def test_unknown_method_is_kept_as_is():
-    assert describe_method("obstructing the field") == "obstructing the field"
+def test_unusual_method_is_kept_as_is():
+    assert parse_dismissal("SPD Smith obstructing the field 4 (10b)") == ("Smith obstructing the field", "4", "10")
+
+
+@pytest.mark.parametrize("name, expected", [
+    ("T Murphy", "Murphy"), ("Q de Kock", "de Kock"), ("Todd Murphy", "Murphy"), ("Murphy", "Murphy"),
+])
+def test_surname(name, expected):
+    assert surname(name) == expected
 
 
 @pytest.mark.parametrize("score, wickets", [
@@ -69,7 +76,7 @@ def test_new_wicket_is_reported_with_method():
     [wicket] = w.check(match("277/7 (84.5 ov)"))
 
     assert wicket.title == "WICKET! AUS-A 7/277 (84.5)"
-    assert wicket.subtitle == "Todd Murphy bowled Kamboj · 33 (91)"
+    assert wicket.subtitle == "Murphy b Kamboj · 33 (91)"
     assert wicket.commentary.startswith("Kamboj does the job straightaway")
 
     # Reported once only.

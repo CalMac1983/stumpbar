@@ -12,7 +12,7 @@ A tiny macOS menu bar app that shows cricket scores.
 - Menu lists **Live**, **Results** and **Upcoming** matches; each has a submenu to pin it or open it on ESPNcricinfo.
 - "International only" hides domestic/A-team games.
 - **Wicket alerts** for the pinned match, with how the batter was out, e.g.
-  *WICKET! AUS-A 7/277 (84.5) — Todd Murphy bowled Kamboj · 33 (91)*.
+  *WICKET! AUS-A 7/277 (84.5) — Murphy b Kamboj · 33 (91)*.
   macOS asks for permission on first launch; if you miss it, turn on Stumpbar under
   System Settings → Notifications.
 - Refreshes every 15 seconds (⌘R to refresh now).
@@ -48,7 +48,8 @@ python app.py
 To just print current scores in the terminal: `python scores.py`.
 
 Notifications need the app bundle, so test them with the built app:
-`open dist/Stumpbar.app --args --demo-wicket` shows a sample wicket alert.
+`open dist/Stumpbar.app --args --demo-wicket` shows a sample wicket alert, and
+`--demo-dismissals` sends one alert per dismissal type (bowled, caught, lbw, stumped, run out...).
 
 ## Tests
 

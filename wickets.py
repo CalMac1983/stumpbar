@@ -24,8 +24,7 @@ RUNS_BALLS = re.compile(r"\s+(\d+)\s+\((\d+)b\b")
 @dataclass
 class Wicket:
     team: str  # abbreviation of the batting side
-    batter: str
-    method: str  # plain English, e.g. "caught Padikkal, bowled Bhute"
+    line: str  # scorecard style, e.g. "Philippe c Padikkal b Bhute"
     runs: str
     balls: str
     score: str  # after the wicket, wickets first, e.g. "7/277 (84.5)"
@@ -37,8 +36,8 @@ class Wicket:
 
     @property
     def subtitle(self) -> str:
-        line = f"{self.batter} {self.method}".strip()
-        if self.runs:
+        line = self.line
+        if line and self.runs:
             line += f" · {self.runs} ({self.balls})"
         return line
 
@@ -58,31 +57,16 @@ def team_wickets(score: str) -> int | None:
     return 10 if re.match(r"\d+", innings) else None
 
 
-def describe_method(how: str) -> str:
-    """Turn scorecard notation into words: 'c †Kushagra b Bhute' -> 'caught Kushagra (wk), bowled Bhute'."""
-    how = re.sub(r"\s+", " ", how.replace("†", "(wk) ")).strip()
-
-    def keeper(name):  # "(wk) Kushagra" -> "Kushagra (wk)"
-        return f"{name[5:]} (wk)" if name.startswith("(wk) ") else name
-
-    patterns = [
-        (r"c & b (.+)", lambda m: f"caught & bowled {m[1]}"),
-        (r"c (.+?) b (.+)", lambda m: f"caught {keeper(m[1])}, bowled {m[2]}"),
-        (r"st (.+?) b (.+)", lambda m: f"stumped {keeper(m[1])}, bowled {m[2]}"),
-        (r"lbw b (.+)", lambda m: f"lbw, bowled {m[1]}"),
-        (r"hit wicket b (.+)", lambda m: f"hit wicket, bowled {m[1]}"),
-        (r"b (.+)", lambda m: f"bowled {m[1]}"),
-        (r"run out \((.+)\)", lambda m: f"run out ({', '.join(keeper(n) for n in m[1].split('/'))})"),
-    ]
-    for pattern, fmt in patterns:
-        m = re.fullmatch(pattern, how)
-        if m:
-            return fmt(m)
-    return how
+def surname(name: str) -> str:
+    """'T Murphy' -> 'Murphy', 'Q de Kock' -> 'de Kock', 'Todd Murphy' -> 'Murphy'."""
+    parts = name.split()
+    if len(parts) > 1 and parts[0].isupper():  # scorecard initials
+        return " ".join(parts[1:])
+    return parts[-1] if parts else ""
 
 
-def parse_dismissal(text: str) -> tuple[str, str, str]:
-    """Split 'T Murphy  b Kamboj 33 (91b 2x4 1x6) SR: 36.26' into (method, runs, balls)."""
+def parse_dismissal(text: str, batter_name: str = "") -> tuple[str, str, str]:
+    """'T Murphy  b Kamboj 33 (91b 2x4 1x6) SR: 36.26' -> ('Murphy b Kamboj', '33', '91')."""
     text = html.unescape(text)
     runs = balls = ""
     m = RUNS_BALLS.search(text)
@@ -90,8 +74,9 @@ def parse_dismissal(text: str) -> tuple[str, str, str]:
         runs, balls = m[1], m[2]
         text = text[: m.start()]
     start = METHOD_START.search(text)
-    how = text[start.end():] if start else ""
-    return describe_method(how), runs, balls
+    name, how = (text[: start.start()], text[start.end():]) if start else (batter_name, "")
+    batter = surname(name or batter_name) or "Batter"
+    return f"{batter} {' '.join(how.split())}".strip(), runs, balls
 
 
 def fetch_recent_balls(match: Match, timeout: float = 10) -> list[dict]:
@@ -110,15 +95,15 @@ def recent_balls_from_summary(summary: dict) -> list[dict]:
 
 def wicket_from_ball(ball: dict, team_abbr: str) -> Wicket:
     dismissal = ball.get("dismissal", {})
-    method, runs, balls = parse_dismissal(dismissal.get("text", ""))
+    batter_name = dismissal.get("batsman", {}).get("athlete", {}).get("name", "")
+    line, runs, balls = parse_dismissal(dismissal.get("text", ""), batter_name)
     innings, over = ball.get("innings", {}), ball.get("over", {})
     score = f"{innings.get('wickets')}/{innings.get('runs')}" if "runs" in innings else ""
     if over.get("overs") is not None:
         score += f" ({over['overs']})"
     return Wicket(
         team=ball.get("team", {}).get("abbreviation") or team_abbr,
-        batter=dismissal.get("batsman", {}).get("athlete", {}).get("name", "Batter"),
-        method=method,
+        line=line,
         runs=runs,
         balls=balls,
         score=score,
@@ -180,7 +165,7 @@ class WicketWatcher:
             if count > 0 and checks >= MAX_PENDING_CHECKS:
                 # Details never showed up: still let the user know.
                 score = overs_balls(wickets_first(team.score))
-                found.extend(Wicket(team.abbr, "", "", "", "", score, "") for _ in range(count))
+                found.extend(Wicket(team.abbr, "", "", "", score, "") for _ in range(count))
                 count = 0
             if count > 0:
                 self.pending[team.id] = [count, checks]

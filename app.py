@@ -7,10 +7,23 @@ import rumps
 
 from notify import SETTINGS_URL, Notifier
 from scores import fetch_matches
-from wickets import Wicket, WicketWatcher
+from wickets import Wicket, WicketWatcher, parse_dismissal
 
 REFRESH_SECONDS = 15
 SECTIONS = [("in", "Live"), ("post", "Results"), ("pre", "Upcoming")]
+
+# Scorecard lines in ESPN's format, one per dismissal type, for --demo-dismissals.
+DEMO_DISMISSALS = [
+    ("AUS-A", "7/277 (84.5)", "T Murphy  b Kamboj 33 (91b 2x4 1x6) SR: 36.26"),
+    ("AUS-A", "1/12 (7.1)", "JR Philippe c Padikkal b Bhute 5 (21b 0x4 0x6) SR: 23.8"),
+    ("AUS-A", "3/31 (11.6)", "PSP Handscomb c &dagger;Kushagra b Bhute 0 (15b 0x4 0x6) SR: 0"),
+    ("IND", "3/142 (31.2)", "V Kohli c & b Lyon 44 (60b 5x4 0x6) SR: 73.33"),
+    ("SA", "1/20 (2.4)", "Q de Kock lbw b Starc 12 (9b 2x4 0x6) SR: 133.33"),
+    ("IND", "5/188 (24.3)", "RR Pant st &dagger;Carey b Zampa 27 (18b 3x4 1x6) SR: 150"),
+    ("AUS", "4/201 (44.1)", "M Labuschagne hit wicket b Bumrah 3 (7b 0x4 0x6) SR: 42.85"),
+    ("AUS", "3/150 (30.4)", "SPD Smith run out (Jadeja/&dagger;Pant) 61 (80b 6x4 0x6) SR: 76.25"),
+    ("IND", "1/40 (5.2)", "RG Sharma retired hurt 20 (22b 3x4 0x6) SR: 90.9"),
+]
 
 
 class Stumpbar(rumps.App):
@@ -25,6 +38,9 @@ class Stumpbar(rumps.App):
         self.refresh(None)
         if "--demo-wicket" in sys.argv:
             rumps.Timer(self.demo_wicket, 2).start()
+        if "--demo-dismissals" in sys.argv:
+            self.demo_queue = list(DEMO_DISMISSALS)
+            rumps.Timer(self.demo_next_dismissal, 3).start()
 
     @rumps.timer(REFRESH_SECONDS)
     def tick(self, _):
@@ -51,10 +67,20 @@ class Stumpbar(rumps.App):
     def demo_wicket(self, timer):
         """Show a sample wicket alert (launch with --demo-wicket) to check notifications work."""
         timer.stop()
-        self.notify(Wicket("AUS-A", "Todd Murphy", "bowled Kamboj", "33", "91", "7/277 (84.5)",
+        self.notify(Wicket("AUS-A", "Murphy b Kamboj", "33", "91", "7/277 (84.5)",
                            "Kamboj does the job straightaway. A perfect length on middle, "
                            "nips in enough to beat the bat and to rattle stumps."))
         rumps.Timer(lambda t: (t.stop(), self.notifier.log_delivered()), 3).start()
+
+    def demo_next_dismissal(self, timer):
+        """Send one sample alert per dismissal type (launch with --demo-dismissals)."""
+        if not self.demo_queue:
+            timer.stop()
+            self.notifier.log_delivered()
+            return
+        team, score, text = self.demo_queue.pop(0)
+        line, runs, balls = parse_dismissal(text)
+        self.notify(Wicket(team, line, runs, balls, score, "Demo alert: " + text.split(" (")[0]))
 
     def rebuild(self):
         self.menu.clear()
