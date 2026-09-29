@@ -23,6 +23,7 @@ class Team:
 @dataclass
 class Match:
     id: str
+    league_id: str
     state: str  # "pre", "in" or "post"
     title: str
     description: str
@@ -90,6 +91,7 @@ def fetch_matches(timeout: float = 10) -> list[Match]:
                 matches.append(
                     Match(
                         id=ev["id"],
+                        league_id=str(league.get("id", "")),
                         state=status.get("type", {}).get("state", ev.get("status", "")),
                         title=ev.get("name", ""),
                         description=ev.get("description", ""),

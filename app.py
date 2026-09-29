@@ -1,10 +1,13 @@
 """Stumpbar: a macOS menu bar app showing live cricket scores."""
 
+import sys
 import webbrowser
 
 import rumps
 
+from notify import SETTINGS_URL, Notifier
 from scores import fetch_matches
+from wickets import Wicket, WicketWatcher
 
 REFRESH_SECONDS = 15
 SECTIONS = [("in", "Live"), ("post", "Results"), ("pre", "Upcoming")]
@@ -15,8 +18,13 @@ class Stumpbar(rumps.App):
         super().__init__("🏏", quit_button=None)
         self.pinned_id = None
         self.international_only = False
+        self.wicket_alerts = True
+        self.watcher = WicketWatcher()
+        self.notifier = Notifier()
         self.matches = []
         self.refresh(None)
+        if "--demo-wicket" in sys.argv:
+            rumps.Timer(self.demo_wicket, 2).start()
 
     @rumps.timer(REFRESH_SECONDS)
     def tick(self, _):
@@ -28,7 +36,25 @@ class Stumpbar(rumps.App):
             self.error = None
         except Exception as exc:  # network errors etc. — keep the last good data
             self.error = str(exc)
+        else:
+            self.check_wickets()
         self.rebuild()
+
+    def check_wickets(self):
+        pinned = next((m for m in self.matches if m.id == self.pinned_id), None)
+        for wicket in self.watcher.check(pinned if self.wicket_alerts else None):
+            self.notify(wicket)
+
+    def notify(self, wicket: Wicket):
+        self.notifier.send(wicket.title, wicket.subtitle, wicket.commentary)
+
+    def demo_wicket(self, timer):
+        """Show a sample wicket alert (launch with --demo-wicket) to check notifications work."""
+        timer.stop()
+        self.notify(Wicket("AUS-A", "Todd Murphy", "bowled Kamboj", "33", "91", "7/277 (84.5)",
+                           "Kamboj does the job straightaway. A perfect length on middle, "
+                           "nips in enough to beat the bat and to rattle stumps."))
+        rumps.Timer(lambda t: (t.stop(), self.notifier.log_delivered()), 3).start()
 
     def rebuild(self):
         self.menu.clear()
@@ -54,6 +80,12 @@ class Stumpbar(rumps.App):
         intl = rumps.MenuItem("International only", callback=self.toggle_international)
         intl.state = self.international_only
         self.menu.add(intl)
+        alerts = rumps.MenuItem("Wicket alerts (pinned match)", callback=self.toggle_wicket_alerts)
+        alerts.state = self.wicket_alerts
+        self.menu.add(alerts)
+        if self.wicket_alerts and self.notifier.allowed is False:
+            self.menu.add(rumps.MenuItem("   ⚠️ Notifications are off — open Settings…",
+                                         callback=lambda _: webbrowser.open(SETTINGS_URL)))
         if self.pinned_id:
             self.menu.add(rumps.MenuItem("Unpin", callback=self.unpin))
         self.menu.add(rumps.MenuItem("Refresh", callback=self.refresh, key="r"))
@@ -86,6 +118,10 @@ class Stumpbar(rumps.App):
 
     def unpin(self, _):
         self.pinned_id = None
+        self.rebuild()
+
+    def toggle_wicket_alerts(self, _):
+        self.wicket_alerts = not self.wicket_alerts
         self.rebuild()
 
     def toggle_international(self, _):

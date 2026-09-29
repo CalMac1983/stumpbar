@@ -1,2 +1,3 @@
 rumps>=0.4.0
 requests>=2.31
+pyobjc-framework-UserNotifications>=10.0
