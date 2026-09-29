@@ -6,7 +6,7 @@ import rumps
 
 from scores import fetch_matches
 
-REFRESH_SECONDS = 60
+REFRESH_SECONDS = 15
 SECTIONS = [("in", "Live"), ("post", "Results"), ("pre", "Upcoming")]
 
 
@@ -74,7 +74,7 @@ class CricketTray(rumps.App):
     def update_title(self):
         pinned = next((m for m in self.matches if m.id == self.pinned_id), None)
         if pinned:
-            self.title = f"🏏 {pinned.short_score}"
+            self.title = f"🏏 {pinned.batting_score}"
         else:
             live = sum(1 for m in self.matches if m.state == "in"
                        and (m.international or not self.international_only))
