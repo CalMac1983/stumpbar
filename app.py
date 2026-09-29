@@ -1,4 +1,4 @@
-"""Cricket Tray: a macOS menu bar app showing live cricket scores."""
+"""Stumpbar: a macOS menu bar app showing live cricket scores."""
 
 import webbrowser
 
@@ -10,7 +10,7 @@ REFRESH_SECONDS = 15
 SECTIONS = [("in", "Live"), ("post", "Results"), ("pre", "Upcoming")]
 
 
-class CricketTray(rumps.App):
+class Stumpbar(rumps.App):
     def __init__(self):
         super().__init__("🏏", quit_button=None)
         self.pinned_id = None
@@ -94,4 +94,4 @@ class CricketTray(rumps.App):
 
 
 if __name__ == "__main__":
-    CricketTray().run()
+    Stumpbar().run()

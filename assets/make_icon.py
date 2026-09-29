@@ -1,6 +1,6 @@
 """Draw the app icon: a red cricket ball on a green rounded square.
 
-Writes assets/icon.png (1024px) and assets/CricketTray.icns.
+Writes assets/icon.png (1024px) and assets/Stumpbar.icns.
 Needs Pillow and numpy:  .venv/bin/pip install pillow numpy
 """
 
@@ -153,14 +153,14 @@ def main():
     icon.save(png)
 
     with tempfile.TemporaryDirectory() as tmp:
-        iconset = Path(tmp) / "CricketTray.iconset"
+        iconset = Path(tmp) / "Stumpbar.iconset"
         iconset.mkdir()
         for px in (16, 32, 128, 256, 512):
             icon.resize((px, px), Image.LANCZOS).save(iconset / f"icon_{px}x{px}.png")
             icon.resize((px * 2, px * 2), Image.LANCZOS).save(iconset / f"icon_{px}x{px}@2x.png")
-        subprocess.run(["iconutil", "-c", "icns", str(iconset), "-o", str(HERE / "CricketTray.icns")], check=True)
+        subprocess.run(["iconutil", "-c", "icns", str(iconset), "-o", str(HERE / "Stumpbar.icns")], check=True)
 
-    print(f"Wrote {png} and {HERE / 'CricketTray.icns'}")
+    print(f"Wrote {png} and {HERE / 'Stumpbar.icns'}")
 
 
 if __name__ == "__main__":

@@ -1,4 +1,4 @@
-# Cricket Tray
+# Stumpbar
 
 A tiny macOS menu bar app that shows cricket scores.
 
@@ -15,13 +15,13 @@ Scores come from ESPN's public (unofficial, undocumented) scoreboard feed — no
 ./build.sh
 ```
 
-This builds `dist/Cricket Tray.app` and `dist/CricketTray-1.0.0.dmg`. Open the DMG and drag
-**Cricket Tray** into **Applications**. It runs in the menu bar only (no Dock icon).
+This builds `dist/Stumpbar.app` and `dist/Stumpbar-1.0.0.dmg`. Open the DMG and drag
+**Stumpbar** into **Applications**. It runs in the menu bar only (no Dock icon).
 
 The app is ad-hoc signed, not notarized. On another Mac, macOS will block the first launch:
 right-click the app → **Open**, or allow it under System Settings → Privacy & Security.
 
-To start it at login: System Settings → General → Login Items → add Cricket Tray.
+To start it at login: System Settings → General → Login Items → add Stumpbar.
 
 ## Run from source
 

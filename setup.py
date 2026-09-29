@@ -4,15 +4,15 @@ from setuptools import setup
 
 setup(
     app=["app.py"],
-    name="Cricket Tray",
+    name="Stumpbar",
     options={
         "py2app": {
-            "iconfile": "assets/CricketTray.icns",
+            "iconfile": "assets/Stumpbar.icns",
             "packages": ["rumps", "requests", "certifi"],
             "plist": {
-                "CFBundleName": "Cricket Tray",
-                "CFBundleDisplayName": "Cricket Tray",
-                "CFBundleIdentifier": "com.calmac.cricket-tray",
+                "CFBundleName": "Stumpbar",
+                "CFBundleDisplayName": "Stumpbar",
+                "CFBundleIdentifier": "com.calmac.stumpbar",
                 "CFBundleShortVersionString": "1.0.0",
                 "CFBundleVersion": "1.0.0",
                 "LSUIElement": True,  # menu bar only: no Dock icon

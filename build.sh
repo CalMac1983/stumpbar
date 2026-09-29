@@ -1,11 +1,11 @@
 #!/bin/sh
-# Build "Cricket Tray.app" and a drag-to-install DMG in dist/.
+# Build "Stumpbar.app" and a drag-to-install DMG in dist/.
 set -e
 cd "$(dirname "$0")"
 
 VERSION=1.0.0
-APP="dist/Cricket Tray.app"
-DMG="dist/CricketTray-$VERSION.dmg"
+APP="dist/Stumpbar.app"
+DMG="dist/Stumpbar-$VERSION.dmg"
 
 [ -d .venv ] || python3 -m venv .venv
 .venv/bin/pip install -q -r requirements.txt py2app
@@ -19,7 +19,7 @@ codesign --force --deep --sign - "$APP"
 STAGE=$(mktemp -d)
 cp -R "$APP" "$STAGE/"
 ln -s /Applications "$STAGE/Applications"
-hdiutil create -volname "Cricket Tray" -srcfolder "$STAGE" -ov -format UDZO "$DMG"
+hdiutil create -volname "Stumpbar" -srcfolder "$STAGE" -ov -format UDZO "$DMG"
 rm -rf "$STAGE"
 
 echo "Built $APP and $DMG"
