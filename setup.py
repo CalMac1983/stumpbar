@@ -8,6 +8,7 @@ setup(
     options={
         "py2app": {
             "iconfile": "assets/Stumpbar.icns",
+            "resources": ["LICENSE", "THIRD_PARTY_NOTICES.md"],
             "packages": ["rumps", "requests", "certifi"],
             "plist": {
                 "CFBundleName": "Stumpbar",

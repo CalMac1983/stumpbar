@@ -19,6 +19,8 @@ codesign --force --deep --sign - "$APP"
 STAGE=$(mktemp -d)
 cp -R "$APP" "$STAGE/"
 ln -s /Applications "$STAGE/Applications"
+cp LICENSE "$STAGE/LICENSE.txt"
+cp THIRD_PARTY_NOTICES.md "$STAGE/Third-Party Notices.md"
 hdiutil create -volname "Stumpbar" -srcfolder "$STAGE" -ov -format UDZO "$DMG"
 rm -rf "$STAGE"
 
