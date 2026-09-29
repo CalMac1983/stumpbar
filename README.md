@@ -28,6 +28,9 @@ Scores come from ESPN's public (unofficial, undocumented) scoreboard feed — no
 This builds `dist/Stumpbar.app` and `dist/Stumpbar-1.0.0.dmg`. Open the DMG and drag
 **Stumpbar** into **Applications**. It runs in the menu bar only (no Dock icon).
 
+Stumpbar is a universal app: it runs on Apple Silicon and Intel Macs (macOS 11+). The Intel
+version hasn't been tested on real Intel hardware yet.
+
 The app is ad-hoc signed, not notarized. On another Mac, macOS will block the first launch:
 right-click the app → **Open**, or allow it under System Settings → Privacy & Security.
 
