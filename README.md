@@ -33,3 +33,8 @@ python app.py
 ```
 
 To just print current scores in the terminal: `python scores.py`.
+
+## Licence
+
+MIT — see [LICENSE](LICENSE). Bundled third-party software is listed in
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
