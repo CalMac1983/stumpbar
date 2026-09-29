@@ -2,7 +2,13 @@
 
 A tiny macOS menu bar app that shows cricket scores.
 
+![Pinned score in the menu bar](assets/screenshots/menu-bar.png)
+
+![Stumpbar menu showing live matches, results and upcoming games](assets/screenshots/menu.jpeg)
+
 - Menu bar shows 🏏 plus the number of live matches, or the score of a match you pin.
+- A pinned match shows the batting side as wickets/runs with over.ball, e.g. `AUS 7/282 (54.3)`,
+  or the reason play has stopped, e.g. `(Stumps)`, `(Tea)`, `(Rain delay)`.
 - Menu lists **Live**, **Results** and **Upcoming** matches; each has a submenu to pin it or open it on ESPNcricinfo.
 - "International only" hides domestic/A-team games.
 - Refreshes every 15 seconds (⌘R to refresh now).
